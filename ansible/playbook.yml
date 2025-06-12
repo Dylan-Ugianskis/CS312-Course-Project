@@ -1,0 +1,67 @@
+---
+- name: Configure Minecraft Server
+  hosts: minecraft
+  vars:
+    # This URL should match the one in your terraform.tfvars
+    minecraft_jar_url: "https://piston-data.mojang.com/v1/objects/e6ec2f64e6080b9b5d9b471b291c33cc7f509733/server.jar"
+    minecraft_path: /opt/minecraft_server
+    java_ram: "-Xmx768M -Xms512M" # Memory for t2.micro
+
+  tasks:
+    - name: Print all variables
+      ansible.builtin.debug:
+        var: hostvars[inventory_hostname]
+
+    - name: Update all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+
+    - name: Install Java 21 (Amazon Corretto) and Screen
+      ansible.builtin.dnf:
+        name:
+          - java-21-amazon-corretto-devel
+          - screen
+        state: present
+
+    - name: Create a dedicated 'minecraft' user
+      ansible.builtin.user:
+        name: minecraft
+        system: yes
+        create_home: no
+
+    - name: Create the Minecraft server directory
+      ansible.builtin.file:
+        path: "{{ minecraft_path }}"
+        state: directory
+        owner: minecraft
+        group: minecraft
+        mode: '0755'
+
+    - name: Download the Minecraft server JAR
+      ansible.builtin.get_url:
+        url: "{{ minecraft_jar_url }}"
+        dest: "{{ minecraft_path }}/server.jar"
+        owner: minecraft
+        group: minecraft
+        mode: '0644'
+
+    - name: Agree to the EULA
+      ansible.builtin.copy:
+        content: "eula=true"
+        dest: "{{ minecraft_path }}/eula.txt"
+        owner: minecraft
+        group: minecraft
+
+    - name: Deploy the systemd service file
+      ansible.builtin.template:
+        src: templates/minecraft.service.j2
+        dest: /etc/systemd/system/minecraft.service
+        mode: '0644'
+
+    - name: Reload systemd daemon and start Minecraft service
+      ansible.builtin.systemd:
+        name: minecraft
+        daemon_reload: yes
+        enabled: yes
+        state: started

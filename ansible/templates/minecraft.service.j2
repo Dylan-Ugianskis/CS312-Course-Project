@@ -1,0 +1,26 @@
+[Unit]
+Description=Minecraft Server
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+User=minecraft
+Nice=1
+KillMode=control-group
+SuccessExitStatus=0 1
+ProtectSystem=full
+ProtectHome=true
+PrivateDevices=true
+NoNewPrivileges=true
+
+WorkingDirectory={{ minecraft_path }}
+
+# Start the server directly. systemd will manage it as a daemon.
+ExecStart=/usr/bin/java {{ java_ram }} -jar server.jar nogui
+
+# The default ExecStop sends a SIGTERM signal, which modern Minecraft servers handle gracefully.
+# We can add a timeout to give it plenty of time to save.
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
