@@ -18,8 +18,6 @@ WorkingDirectory={{ minecraft_path }}
 # Start the server directly. systemd will manage it as a daemon.
 ExecStart=/usr/bin/java {{ java_ram }} -jar server.jar nogui
 
-# The default ExecStop sends a SIGTERM signal, which modern Minecraft servers handle gracefully.
-# We can add a timeout to give it plenty of time to save.
 TimeoutStopSec=30
 
 [Install]
