@@ -2,10 +2,9 @@
 - name: Configure Minecraft Server
   hosts: minecraft
   vars:
-    # This URL should match the one in your terraform.tfvars
     minecraft_jar_url: "https://piston-data.mojang.com/v1/objects/e6ec2f64e6080b9b5d9b471b291c33cc7f509733/server.jar"
     minecraft_path: /opt/minecraft_server
-    java_ram: "-Xmx768M -Xms512M" # Memory for t2.micro
+    java_ram: "-Xmx768M -Xms512M" 
 
   tasks:
     - name: Print all variables
@@ -53,7 +52,7 @@
         owner: minecraft
         group: minecraft
 
-    - name: Deploy the systemd service file
+    - name: Deploy the systemd service
       ansible.builtin.template:
         src: templates/minecraft.service.j2
         dest: /etc/systemd/system/minecraft.service
